@@ -1,4 +1,4 @@
-use ndarray::{Array, Array2d};
+use ndarray::{Array, Array2};
 // use ndarray_rand::RandomExt;
 // use ndarray_rand::rand_distr::{Normal, Uniform};
 use core::time;
@@ -9,35 +9,40 @@ use std::thread;
 use std::option;
 
 pub struct Camera {
-    n_rows: u32,
-    n_cols: u32,
+    n_rows: usize,
+    n_cols: usize,
     frame_number: Arc<AtomicU64>,
     acquiring: Arc<AtomicBool>,
     thread_handle: option::Option<thread::JoinHandle<()>>,
-    frame_buffer: Arc<Mutex<Vec<u16>>>,
+    frame_buffer: Arc<Mutex<Array2<u16>>>,
 }
 
 impl Camera {
-    pub fn new(n_rows: u32, n_cols: u32) -> Self {
+    pub fn new(n_rows: usize, n_cols: usize) -> Self {
+        // let frame_shape: Dim::<u32>::
+        let frame_shape = (n_rows, n_cols);
         let frame_buffer = Arc::new(Mutex::new(
-            Array2d
+            Array2::<u16>::zeros(frame_shape)
         ));
         Self{
             n_rows: n_rows,
             n_cols: n_cols,
             frame_number: Arc::new(AtomicU64::new(0)),
             acquiring: Arc::new(AtomicBool::new(false)),
-            thread_handle: None
-
+            thread_handle: None,
+            frame_buffer: frame_buffer,
         }
     }
 
     pub fn start_acquisition(&mut self) {
         println!("Start Acquisition");
         
+        // Get some references to data in self
         let fn_ref = Arc::clone(&self.frame_number);
         let acq_ref = Arc::clone(&self.acquiring);
-
+        let fb_ref = Arc::clone(&self.frame_buffer);
+        
+        // Set acquiring to True until its set otherwise
         acq_ref.store(true, Ordering::Relaxed);
 
         self.thread_handle = option::Option::Some(std::thread::spawn(move ||{
@@ -46,6 +51,9 @@ impl Camera {
 
                 let fr = fn_ref.load(Ordering::Relaxed);
                 fn_ref.store(fr+1, Ordering::Relaxed);
+
+                let mut frame_buffer = fb_ref.lock().unwrap();
+                frame_buffer[(0, 0)] = fr as u16;
             }
         }));
     }
@@ -61,8 +69,8 @@ fn main() {
     println!("Hello, Camera!");
     println!("Init Camera...");
 
-    let rows = 512;
-    let cols = 640;
+    let rows = 256;
+    let cols = 320;
 
     let mut cam = Camera::new(rows, cols);
     println!("Init Camera...Done");
@@ -74,28 +82,21 @@ fn main() {
 
     println!("Started Acquisition...");
     println!("Wait 5 seconds...");
-    thread::sleep(time::Duration::from_secs(5));
+
+    for _ in 0..5 {
+        thread::sleep(time::Duration::from_secs(1));
+        let fr = cam.frame_number.load(Ordering::Relaxed);
+        println!("Frame Number: {}", fr);
+
+        let fb_ref = cam.frame_buffer.clone();
+        let frame_buf = fb_ref.lock().unwrap();
+        println!("Frame Buf {}", frame_buf);
+
+    }
     println!("Done!");
 
     cam.stop_acquisition();
-    let fr = cam.frame_number.load(Ordering::Relaxed);
-    println!("Frame Number: {}", fr);
 
-    // let t_start = Instant::now();
-
-    // let mut noise = Array::random(
-    //     (rows, cols), Uniform::new(0., 10.0));
-
-    // for i in 0..n_iters {
-    //     noise = Array::random(
-    //         (rows, cols), Uniform::new(0., 10.0));
-        
-    //     noise[[0,0]] = i as f64;
-    //     }
-    // let t_elapsed = t_start.elapsed().as_millis() / n_iters;
-    
-    // println!("noise vector {}", noise);
-    // println!("Time per iter: {} ms", t_elapsed);
 
 }
 
