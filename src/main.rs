@@ -1,12 +1,11 @@
 use ndarray::{Array, Array2};
-// use ndarray_rand::RandomExt;
-// use ndarray_rand::rand_distr::{Normal, Uniform};
 use core::time;
 use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-// use std::time::Instant;
 use std::thread;
 use std::option;
+use rand_distr::{Distribution, Normal, NormalError};
+use rand::thread_rng;
 
 pub struct Camera {
     n_rows: usize,
@@ -15,10 +14,11 @@ pub struct Camera {
     acquiring: Arc<AtomicBool>,
     thread_handle: option::Option<thread::JoinHandle<()>>,
     frame_buffer: Arc<Mutex<Array2<u16>>>,
+    e_read_noise: f32
 }
 
 impl Camera {
-    pub fn new(n_rows: usize, n_cols: usize) -> Self {
+    pub fn new(n_rows: usize, n_cols: usize, e_read_noise: f32) -> Self {
         // let frame_shape: Dim::<u32>::
         let frame_shape = (n_rows, n_cols);
         let frame_buffer = Arc::new(Mutex::new(
@@ -31,6 +31,7 @@ impl Camera {
             acquiring: Arc::new(AtomicBool::new(false)),
             thread_handle: None,
             frame_buffer: frame_buffer,
+            e_read_noise: e_read_noise,
         }
     }
 
@@ -45,6 +46,9 @@ impl Camera {
         // Set acquiring to True until its set otherwise
         acq_ref.store(true, Ordering::Relaxed);
 
+        let mut e_read_rng = thread_rng();
+        let normal = Normal::new(2.0, 3.0)?;
+
         self.thread_handle = option::Option::Some(std::thread::spawn(move ||{
             while acq_ref.load(Ordering::Relaxed) {
                 thread::sleep(time::Duration::from_secs(1));
@@ -53,6 +57,12 @@ impl Camera {
                 fn_ref.store(fr+1, Ordering::Relaxed);
 
                 let mut frame_buffer = fb_ref.lock().unwrap();
+
+                // Add read noise
+                for i in frame_buffer {
+
+                }
+
                 frame_buffer[(0, 0)] = fr as u16;
             }
         }));
