@@ -20,26 +20,26 @@ private:
 public:
 
     std::atomic<int> frame_number = 0;
-    std::atomic<int> running = 0;
+    int running = 0;
     std::thread acq_thread;
 
-
     void start_camera() {
-        int frame_number = 0;
+        this->frame_number = 0;
         this->running = 1;
-        auto acq_thread = std::thread(&Camera::loop_func, this);
+        this->acq_thread = std::thread(&Camera::loop_func, this);
 
     }
 
     void stop_acquisition(){
         this->running = 0;
-        acq_thread.join();
+        this->acq_thread.join();
     }
 };
 
 int main(int argc, char** argv) {
     printf("Running thread tests...\n");
-    auto cam = std::make_shared<Camera>();
+    // auto cam = std::make_unique<Camera>();
+    Camera* cam = new Camera();
     printf("Starting Camera...\n");
     cam->start_camera();
     printf("Starting Camera...Done\n");

@@ -51,7 +51,7 @@ fn main() {
     for i in 0..5 {
         thread::sleep(time::Duration::from_secs(1));
         let fr = cam.frame_number.load(Ordering::Relaxed);
-        println!("Iters per second: {}", fr / (i+1));
+        println!("Iters per second: {}", ((fr as f32) / ((i+1) as f32)));
     }
     cam.stop_acquisition();
 
