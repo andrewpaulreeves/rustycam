@@ -1,7 +1,7 @@
 use std::thread;
 use std::time;
 use ndarray::array;
-
+extern crate intel_mkl_src;
 use simple_logger::SimpleLogger;
 
 mod fakecamera;
@@ -101,12 +101,13 @@ fn  test_aoloop() {
     ];
 
 
-    let cam = Camera::new(n_rows, n_cols, e_read_noise, frame_rate);
+    let mut cam = Camera::new(n_rows, n_cols, e_read_noise, frame_rate);
+    cam.start_acquisition();
     let sh = ShackHartmann::new(
         n_rows, n_cols, pixels_per_subap, subap_coordinates, 0);
 
     let dm = DM::new(2);
-    let controller = IntegratorController::new(n_subaps, n_actuators, 1.0);
+    let controller = IntegratorController::new(2*n_subaps, n_actuators, 1.0);
     let mut aoloop = AOLoop::new(vec![cam], vec![sh], controller, vec![dm]);
 
     println!("Init AO Loop...Done");
@@ -133,6 +134,7 @@ fn  test_aoloop() {
 
 fn main() {
     SimpleLogger::new().init().unwrap();
+    log::set_max_level(log::LevelFilter::Info);
     log::info!("Running Rust AO!");
     // test_camera();
     // test_dm();
