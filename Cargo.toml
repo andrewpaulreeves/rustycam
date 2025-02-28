@@ -7,9 +7,11 @@ edition = "2024"
 
 [dependencies]
 ndarray = {version="0.16.1", features=["rayon", "blas"]}
+ndarray-linalg = {version="0.17.0", features=["intel-mkl"]}
 rand = "0.9.0"
 rand_distr = "0.5.1"
 rayon = "1.10.0"
 log =  "0.4.26"
 simple_logger = "5.0.0"
-
+blas = "0.23.0"
+intel-mkl-src = "0.8.1"
