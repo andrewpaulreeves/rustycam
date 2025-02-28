@@ -19,7 +19,7 @@ private:
 
 public:
 
-    std::atomic<int> frame_number = 0;
+    std::atomic<long> frame_number = 0;
     int running = 0;
     std::thread acq_thread;
 

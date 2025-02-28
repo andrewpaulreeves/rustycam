@@ -5,7 +5,17 @@ use std::sync::atomic::Ordering;
 mod fakecamera;
 use fakecamera::Camera;
 
-fn main() {
+mod fakedm;
+use fakedm::DM;
+
+mod wfs;
+use wfs::WFS;
+
+// mod centreofgravity;
+use wfs::centreofgravity::{simple_centre_of_gravity, threshold_centre_of_gravity, test_cog};
+
+
+fn test_camera() {
     println!("Hello, Camera!");
     println!("Init Camera...");
 
@@ -41,5 +51,38 @@ fn main() {
     cam.stop_acquisition();
     let fr = cam.get_frame_number();
     println!("Frames Per Second: {}", fr as f32 / 5.0);
+
+}
+
+fn test_dm() {
+    println!("Hello, DM!");
+    println!("Init DM...");
+
+    let n_acts = 140;
+    let mut dm = DM::new(n_acts);
+    let mut actuator_values = ndarray::Array2::<f32>::zeros((n_acts, 1));
+    let mut n: f32 = 0.0;
+    for i in actuator_values.iter_mut() {
+        *i = n;
+        n = n + 1.0;
+    }
+
+    for i in 0..n_acts {
+        println!("Actuator Value: {}", actuator_values[[i, 0]]);
+    }
+
+    dm.set_actuators(&actuator_values);
+
+    println!("DM Acts: {}", dm.get_actuators());
+
+    println!("Done!");
+}
+
+
+
+fn main() {
+    // test_camera();
+    // test_dm();
+    test_cog();
 
 }
