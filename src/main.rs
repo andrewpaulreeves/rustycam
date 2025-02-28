@@ -2,6 +2,8 @@ use std::thread;
 use std::time;
 use std::sync::atomic::Ordering;
 
+use simple_logger::SimpleLogger;
+
 mod fakecamera;
 use fakecamera::Camera;
 
@@ -39,12 +41,8 @@ fn test_camera() {
         println!("Frame Number:         {}", fr);
         println!("Frames Per Second:    {}", fr as f32 / (i as f32 + 1.0));
 
-        // let fb_ref = cam.frame_buffer.clone();
-        // let frame_buf = fb_ref.lock().unwrap();
         let frame_buf = cam.get_frame();
         println!("Frame Buf {}", frame_buf);
-
-
     }
     println!("Done!");
 
@@ -81,8 +79,11 @@ fn test_dm() {
 
 
 fn main() {
+    SimpleLogger::new().init().unwrap();
+    log::info!("Running Rust AO!");
     // test_camera();
     // test_dm();
-    test_cog();
+    // test_cog();
+    wfs::test_shackhartmann();
 
 }

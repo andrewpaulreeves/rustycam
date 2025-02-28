@@ -1,8 +1,13 @@
 use ndarray::Array2;
 use std::time::{Instant, SystemTime};
+use log::{debug, info, warn};
 
 pub fn simple_centre_of_gravity(data: &Array2<f32>) -> (f32, f32) {
+    debug!("Simple COG");
+    debug!("Data: {:?}", data);
     let (n_rows, n_cols) = data.dim();
+    debug!("n_rows: {}", n_rows);
+    debug!("n_cols: {}", n_cols);
     let mut x: f32 = 0.0;
     let mut y: f32 = 0.0;
     let mut total: f32 = 0.0;
@@ -66,6 +71,7 @@ pub fn test_cog() {
     let data = Array2::<f32>::ones((10, 10));
     let (x, y) = simple_centre_of_gravity(&data);
     println!("Simple COG: ({}, {})", x, y);
+    
     let (x, y) = threshold_centre_of_gravity(&data, 0.);
     println!("Threshold COG: ({}, {})", x, y);
 
