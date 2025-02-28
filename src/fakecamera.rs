@@ -60,7 +60,7 @@ impl Camera {
 
             let mut frame_buffer_tmp = Array2::<u16>::zeros((n_rows, n_cols));
             while acq_ref.load(Ordering::Relaxed) {
-                if (frame_rate != 0.0) {
+                if frame_rate != 0.0 {
                     thread::sleep(time::Duration::from_millis((1000.0 / frame_rate) as u64));
                 }
 

@@ -28,13 +28,15 @@ pub struct ShackHartmann {
     dark_subaps: Array3<f32>,
     flat_subaps: Array3<f32>,
     bg_subaps: Array3<f32>,
-    cal_subaps: Array3<f32>
+    cal_subaps: Array3<f32>,
+    pub detector_id: usize,
 }
 
 impl ShackHartmann {
     pub fn new(
             n_rows: usize, n_cols: usize, 
-            pixels_per_subap:usize, subap_coordinates: Array2<usize>) -> Self {
+            pixels_per_subap:usize, subap_coordinates: Array2<usize>,
+            detector_id: usize) -> Self {
 
 
         let n_subaps = subap_coordinates.shape()[0];
@@ -59,7 +61,8 @@ impl ShackHartmann {
             cal_subaps: cal_subaps,
             dark_subaps: dark_subaps,
             bg_subaps: bg_subaps,
-            flat_subaps: flat_subaps
+            flat_subaps: flat_subaps,
+            detector_id: detector_id,
         }
     }
 
@@ -121,7 +124,7 @@ pub fn test_shackhartmann () {
     ];
 
 
-    let sh = ShackHartmann::new(n_rows, n_cols, pixels_per_subap, subap_coordinates);
+    let sh = ShackHartmann::new(n_rows, n_cols, pixels_per_subap, subap_coordinates, 0);
 
     let frame = Array::from_iter(0..(n_rows*n_cols) as u16).to_shape((n_rows, n_cols)).unwrap().to_owned();
 
