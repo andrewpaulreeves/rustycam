@@ -6,12 +6,14 @@ edition = "2024"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ndarray = {version="0.16.1", features=["rayon", "blas"]}
-ndarray-linalg = {version="0.17.0", features=["intel-mkl"]}
+ndarray = {version="0.16.1", features=["rayon"]}
 rand = "0.9.0"
 rand_distr = "0.5.1"
 rayon = "1.10.0"
 log =  "0.4.26"
 simple_logger = "5.0.0"
-blas = "0.23.0"
-intel-mkl-src = "0.8.1"
+# blas = "0.23.0"
+# ndarray-linalg = {version="0.17.0", features=["openblas"]}
+# blas-src = { version = "0.11.1", features = ["openblas"] }
+# openblas-src = { version = "0.10", features = ["cblas", "system"] }
+# intel-mkl-src = "0.8.1"

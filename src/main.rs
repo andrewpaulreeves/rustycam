@@ -1,7 +1,8 @@
 use std::thread;
 use std::time;
 use ndarray::array;
-extern crate intel_mkl_src;
+// extern crate intel_mkl_src;
+// extern crate blas_src;
 use simple_logger::SimpleLogger;
 
 mod fakecamera;
@@ -86,20 +87,29 @@ fn test_dm() {
 fn  test_aoloop() {
     println!("Hello, AO Loop!");
     println!("Init AO Loop...");
-    let n_rows = 16;
-    let n_cols = 16;
+    let n_rows = 80;
+    let n_cols = 80;
     let frame_rate = 0.0 as f32;
     let e_read_noise = 10 as f32;
     let pixels_per_subap = 8;
-    let n_subaps = 4;
-    let n_actuators = 2;
-    let subap_coordinates = array![
-        [0, 8, 0, 8], 
-        [0, 8, 8, 16], 
-        [8, 16, 0, 8], 
-        [8, 16, 8, 16]
-    ];
+    let nx_subaps = (n_rows / pixels_per_subap);
+    let n_subaps = nx_subaps * nx_subaps;
+    let n_actuators = 140;
 
+    println!("n_subaps: {}", n_subaps);
+    println!("nx_subaps: {}", nx_subaps);
+    println!("pixels_per_subap: {}", pixels_per_subap);
+    println!("n_actuators: {}", n_actuators);
+
+    let mut subap_coordinates = ndarray::Array2::<usize>::zeros((n_subaps, 4));
+    for x in 0..nx_subaps{
+        for y in 0..nx_subaps {
+            subap_coordinates[[x*nx_subaps + y, 0]] = (x*pixels_per_subap);
+            subap_coordinates[[x*nx_subaps + y, 1]] = ((x+1)*pixels_per_subap);
+            subap_coordinates[[x*nx_subaps + y, 2]] = (y*pixels_per_subap);
+            subap_coordinates[[x*nx_subaps + y, 3]] = ((y+1)*pixels_per_subap);
+        }
+    }
 
     let mut cam = Camera::new(n_rows, n_cols, e_read_noise, frame_rate);
     cam.start_acquisition();
@@ -121,7 +131,7 @@ fn  test_aoloop() {
         thread::sleep(time::Duration::from_secs(1));
         let fr = aoloop.get_iteration_number();
         println!("Frame Number:         {}", fr);
-        println!("Frames Per Second:    {}", fr as f32 / (i as f32 + 1.0));
+        println!("Frames Per Second:    {:.2}", fr as f32 / (i as f32 + 1.0));
     }
     println!("Done!");
 
