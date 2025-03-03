@@ -1,6 +1,7 @@
 use std::thread;
 use std::time;
 use ndarray::array;
+use std::vec::Vec;
 // extern crate intel_mkl_src;
 // extern crate blas_src;
 use simple_logger::SimpleLogger;
@@ -95,19 +96,22 @@ fn  test_aoloop() {
     let nx_subaps = (n_rows / pixels_per_subap);
     let n_subaps = nx_subaps * nx_subaps;
     let n_actuators = 140;
+    let run_secs = 10;
 
     println!("n_subaps: {}", n_subaps);
     println!("nx_subaps: {}", nx_subaps);
     println!("pixels_per_subap: {}", pixels_per_subap);
     println!("n_actuators: {}", n_actuators);
 
-    let mut subap_coordinates = ndarray::Array2::<usize>::zeros((n_subaps, 4));
+    let mut subap_coordinates: Vec<Vec<usize>> = Vec::new();
     for x in 0..nx_subaps{
         for y in 0..nx_subaps {
-            subap_coordinates[[x*nx_subaps + y, 0]] = (x*pixels_per_subap);
-            subap_coordinates[[x*nx_subaps + y, 1]] = ((x+1)*pixels_per_subap);
-            subap_coordinates[[x*nx_subaps + y, 2]] = (y*pixels_per_subap);
-            subap_coordinates[[x*nx_subaps + y, 3]] = ((y+1)*pixels_per_subap);
+            subap_coordinates.push(vec![
+                x * pixels_per_subap, 
+                (x + 1) * pixels_per_subap,
+                y * pixels_per_subap,
+                (y + 1) * pixels_per_subap
+                ]);
         }
     }
 
@@ -125,9 +129,9 @@ fn  test_aoloop() {
     aoloop.start_loop();
 
     println!("Started AO Loop...");
-    println!("Wait 5 seconds...");
-
-    for i in 0..5 {
+    println!("Wait {} seconds...", run_secs);
+    
+    for i in 0..run_secs {
         thread::sleep(time::Duration::from_secs(1));
         let fr = aoloop.get_iteration_number();
         println!("Frame Number:         {}", fr);
@@ -137,7 +141,9 @@ fn  test_aoloop() {
 
     aoloop.stop_loop();
     let fr = aoloop.get_iteration_number();
-    println!("Frames Per Second: {}", fr as f32 / 5.0);
+    println!("Frames Per Second: {}", fr as f32 / run_secs as f32);
+
+    aoloop.print_timers();
 
 }
 
