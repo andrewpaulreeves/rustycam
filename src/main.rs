@@ -88,14 +88,14 @@ fn test_dm() {
 fn  test_aoloop() {
     println!("Hello, AO Loop!");
     println!("Init AO Loop...");
-    let n_rows = 80;
-    let n_cols = 80;
+    let n_rows = 320;
+    let n_cols = 320;
     let frame_rate = 0.0 as f32;
     let e_read_noise = 10 as f32;
     let pixels_per_subap = 8;
     let nx_subaps = (n_rows / pixels_per_subap);
     let n_subaps = nx_subaps * nx_subaps;
-    let n_actuators = 140;
+    let n_actuators = 1024;
     let run_secs = 10;
 
     println!("n_subaps: {}", n_subaps);
