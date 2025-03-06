@@ -18,6 +18,8 @@ use wfs::{WFS, ShackHartmann};
 mod controller;
 use controller::IntegratorController;
 
+mod shmupdater;
+
 mod aoloop;
 use aoloop::AOLoop;
 

@@ -5,12 +5,12 @@ use std::thread;
 use std::option;
 use std::time::{Duration, Instant};
 use log::{trace, debug, info, warn};
-use rayon::iter;
 
 use crate::fakecamera::Camera;
 use crate::wfs::ShackHartmann;
 use crate::fakedm::DM;
 use crate::controller::IntegratorController;
+use crate::shmupdater::ShmUpdater;
 
 pub struct AOLoop {
     cameras: Arc<Vec<Camera>>,
@@ -21,6 +21,7 @@ pub struct AOLoop {
     loop_running: Arc<AtomicBool>,
     iteration_number: Arc<AtomicU64>,
     timer: Arc<Mutex<LoopTimers>>,
+    shm_updater: ShmUpdater,
 }
 
 
@@ -55,6 +56,9 @@ impl AOLoop {
             dm_time: Duration::new(0, 0),
         };
 
+        let shm_updater = ShmUpdater::new(
+            wfs.len(), dms.len(), cameras[0].n_rows, cameras[0].n_cols
+        );
         Self {
             cameras: Arc::new(cameras),
             wfs: Arc::new(wfs),
@@ -64,6 +68,7 @@ impl AOLoop {
             loop_running: loop_running,
             iteration_number: iteration_number,
             timer: Arc::new(Mutex::new(timer)),
+            shm_updater: shm_updater,
         }
     }
 
@@ -77,7 +82,6 @@ impl AOLoop {
         let timer_mutex = Arc::clone(&self.timer);
 
         loop_running.store(true, std::sync::atomic::Ordering::Relaxed);
-
 
         self.thread_handle = option::Option::Some(std::thread::spawn(move || {
             while loop_running.load(std::sync::atomic::Ordering::Relaxed) {
@@ -113,6 +117,11 @@ impl AOLoop {
                 let iteration = iteration_number.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                 trace!("Iteration: {}", iteration);
 
+                // Update Shared Memory
+                self.shm_updater.update_camera_frame(detector_images[0], iteration);
+                self.shm_updater.update_actuator_commands(commands, iteration);
+                self.shm_updater.update_wfs_measurements(measurements[0], iteration);
+
                 timer.total_time += loop_start.elapsed();
             }
         }));
@@ -133,8 +142,8 @@ impl AOLoop {
 
         let iteration_number = self.iteration_number.load(Ordering::Relaxed);
         info!("\nPer Iteration:");
-        info!("Iteration Time:      {:?} ns",       timer.total_time.as_nanos() / iteration_number as u128);
-        info!("Camera Time:         {:?} ns",      timer.cam_time.as_nanos() / iteration_number as u128);
+        info!("Iteration Time:      {:?} ns", timer.total_time.as_nanos() / iteration_number as u128);
+        info!("Camera Time:         {:?} ns", timer.cam_time.as_nanos() / iteration_number as u128);
         info!("WFS Time:            {:?} ns", timer.wfs_time.as_nanos() / iteration_number as u128);
         info!("Controller Time:     {:?} ns", timer.ctrl_time.as_nanos() / iteration_number as u128);
         info!("DM Time:             {:?} ns", timer.dm_time.as_nanos() / iteration_number as u128);

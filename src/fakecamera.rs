@@ -8,8 +8,8 @@ use rand_distr::{Distribution, Normal};
 use rand::rng;
 
 pub struct Camera {
-    n_rows: usize,
-    n_cols: usize,
+    pub n_rows: usize,
+    pub n_cols: usize,
     frame_number: Arc<AtomicU64>,
     acquiring: Arc<AtomicBool>,
     thread_handle: option::Option<thread::JoinHandle<()>>,
@@ -95,4 +95,5 @@ impl Camera {
     pub fn get_frame_number(&self) -> u64 {
         self.frame_number.load(Ordering::Relaxed)
     }
+
 }

@@ -13,6 +13,7 @@ rayon = "1.10.0"
 log =  "0.4.26"
 simple_logger = "5.0.0"
 matrixmultiply = {version="0.3.9", features=["threading"]}
+aosharedmemory = {path="../aosharedmemory"}
 # blas = "0.23.0"
 # ndarray-linalg = {version="0.17.0", features=["openblas"]}
 # blas-src = { version = "0.11.1", features = ["openblas"] }
