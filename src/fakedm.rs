@@ -1,7 +1,7 @@
 use ndarray::Array1;
 
 pub struct DM {
-    n_acts: usize,
+    pub n_acts: usize,
     act_buffer: Array1<f32>,
 }
 

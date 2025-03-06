@@ -22,7 +22,7 @@ pub struct WFS {
 pub struct ShackHartmann {
     n_rows: usize,
     n_cols: usize,
-    n_measurements: usize,
+    pub n_measurements: usize,
     n_subaps: usize,
     pixels_per_subap: usize,
     subap_coordinates: Vec<Vec<usize>>,
@@ -113,6 +113,8 @@ impl ShackHartmann {
         });
         measurements_mutex.lock().unwrap().to_owned()
     }
+
+
 }
 
 

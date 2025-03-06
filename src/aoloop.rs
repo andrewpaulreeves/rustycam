@@ -21,7 +21,7 @@ pub struct AOLoop {
     loop_running: Arc<AtomicBool>,
     iteration_number: Arc<AtomicU64>,
     timer: Arc<Mutex<LoopTimers>>,
-    shm_updater: ShmUpdater,
+    shm_updater: Arc<Mutex<ShmUpdater>>,
 }
 
 
@@ -57,7 +57,7 @@ impl AOLoop {
         };
 
         let shm_updater = ShmUpdater::new(
-            wfs.len(), dms.len(), cameras[0].n_rows, cameras[0].n_cols
+            wfs[0].n_measurements, dms[0].n_acts, cameras[0].n_rows, cameras[0].n_cols
         );
         Self {
             cameras: Arc::new(cameras),
@@ -68,7 +68,7 @@ impl AOLoop {
             loop_running: loop_running,
             iteration_number: iteration_number,
             timer: Arc::new(Mutex::new(timer)),
-            shm_updater: shm_updater,
+            shm_updater: Arc::new(Mutex::new(shm_updater)),
         }
     }
 
@@ -80,7 +80,7 @@ impl AOLoop {
         let controller_mut = Arc::clone(&self.controller);
         let dms_mut = Arc::clone(&self.dms);
         let timer_mutex = Arc::clone(&self.timer);
-        let shm_updater = self.shm_updater.clone();
+        let shm_updater_mutex = self.shm_updater.clone();
 
         loop_running.store(true, std::sync::atomic::Ordering::Relaxed);
 
@@ -118,10 +118,10 @@ impl AOLoop {
                 let iteration = iteration_number.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                 trace!("Iteration: {}", iteration);
 
-                shm_updater.update_camera_frame(detector_images[0], iteration);
-                shm_updater.update_actuator_commands(commands, iteration);
-                shm_updater.update_wfs_measurements(measurements[0], iteration);
-                self.shm_updater.update_wfs_measurements(measurements[0], iteration);
+                let mut shm_updater = shm_updater_mutex.lock().unwrap();
+                // shm_updater.update_camera_frame(&detector_images[0], iteration);
+                shm_updater.update_actuator_commands(&commands, iteration);
+                shm_updater.update_wfs_measurements(&measurements[0], iteration);
 
                 timer.total_time += loop_start.elapsed();
             }
