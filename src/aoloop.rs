@@ -80,6 +80,7 @@ impl AOLoop {
         let controller_mut = Arc::clone(&self.controller);
         let dms_mut = Arc::clone(&self.dms);
         let timer_mutex = Arc::clone(&self.timer);
+        let shm_updater = self.shm_updater.clone();
 
         loop_running.store(true, std::sync::atomic::Ordering::Relaxed);
 
@@ -117,9 +118,9 @@ impl AOLoop {
                 let iteration = iteration_number.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                 trace!("Iteration: {}", iteration);
 
-                // Update Shared Memory
-                self.shm_updater.update_camera_frame(detector_images[0], iteration);
-                self.shm_updater.update_actuator_commands(commands, iteration);
+                shm_updater.update_camera_frame(detector_images[0], iteration);
+                shm_updater.update_actuator_commands(commands, iteration);
+                shm_updater.update_wfs_measurements(measurements[0], iteration);
                 self.shm_updater.update_wfs_measurements(measurements[0], iteration);
 
                 timer.total_time += loop_start.elapsed();
